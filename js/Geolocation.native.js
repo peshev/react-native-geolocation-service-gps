@@ -108,7 +108,11 @@ const Geolocation = {
 
       subscriptions = [];
     }
-  }
+  },
+
+  observeSatelliteStatus: RNFusedLocation.observeSatelliteStatus,
+
+  stopObservingSatelliteStatus: RNFusedLocation.stopObservingSatelliteStatus
 };
 
 export default Geolocation;

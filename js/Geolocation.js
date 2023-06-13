@@ -40,6 +40,14 @@ const Geolocation = {
 
   stopObserving: function () {
     throw new Error('Method not supported by browser');
+  },
+
+  observeSatelliteStatus: function (observerCallback) {
+    return navigator.geolocation.observeSatelliteStatus(observerCallback);
+  },
+
+  stopObservingSatelliteStatus: function (observerCallbackId) {
+    navigator.geolocation.stopObservingSatelliteStatus(observerCallbackId);
   }
 };
 
