@@ -4,7 +4,15 @@
   "description": "React native geolocation service for iOS and android",
   "main": "js/index.js",
   "scripts": {
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "prepack": "bob build",
+    "release": "release-it",
+    "example": "yarn --cwd example",
+    "bootstrap": "yarn example && yarn install && yarn example pods",
+    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build"
   },
   "keywords": [
     "react-native",
@@ -38,7 +46,10 @@
     "husky": "^0.14.3",
     "lint-staged": "^4.0.3",
     "react": "16.5.0",
-    "react-native": "0.57.0"
+    "react-native": "0.57.0",
+    "del-cli": "^5.0.0",
+    "react-native-builder-bob": "^0.20.0",
+    "release-it": "^15.0.0"
   },
   "lint-staged": {
     "*.js": [
