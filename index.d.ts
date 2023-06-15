@@ -73,9 +73,27 @@ declare module "react-native-geolocation-service" {
     provider?: "fused" | "gps" | "network" | "passive";
   }
 
+  export interface Satellite {
+    svid: number;
+    cn0DbHz: number;
+    elevationDegrees: number;
+    azimuthDegrees: number;
+    hasEphemerisData: boolean;
+    hasAlmanacData: boolean;
+    usedInFix: boolean;
+    hasCarrierFrequencyHz: boolean;
+    carrierFrequencyHz: number;
+  }
+
+  export interface SatelliteStatus {
+    satellites: Satellite[];
+  }
+
   type SuccessCallback = (position: GeoPosition) => void;
 
   type ErrorCallback = (error: GeoError) => void;
+
+  type SatelliteCallback = (status: SatelliteStatus) => void;
 
   export function requestAuthorization(
     authorizationLevel: AuthorizationLevel
@@ -96,4 +114,10 @@ declare module "react-native-geolocation-service" {
   export function clearWatch(watchID: number): void;
 
   export function stopObserving(): void;
+
+  export function watchSatellites(
+    callback: SatelliteCallback,
+  ): number;
+
+  export function clearSatelliteWatch(watchID: number): void;
 }

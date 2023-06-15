@@ -6,6 +6,8 @@ const LocationEventEmitter = new NativeEventEmitter(RNFusedLocation);
 const noop = () => {};
 let subscriptions = [];
 let updatesEnabled = false;
+let satelliteSubscriptions = [];
+let satelliteUpdatesEnabled = false;
 
 const Geolocation = {
   setRNConfiguration: (config) => {}, // eslint-disable-line no-unused-vars
@@ -110,9 +112,58 @@ const Geolocation = {
     }
   },
 
-  observeSatelliteStatus: RNFusedLocation.observeSatelliteStatus,
+  watchSatellites: (callback) => {
+    if (!callback) {
+      // eslint-disable-next-line no-console
+      console.error('Must provide a callback');
+    }
 
-  stopObservingSatelliteStatus: RNFusedLocation.stopObservingSatelliteStatus
+    if (!satelliteUpdatesEnabled) {
+      RNFusedLocation.startObservingSatelliteStatus();
+      satelliteUpdatesEnabled = true;
+    }
+
+    const watchID = satelliteSubscriptions.length;
+
+    satelliteSubscriptions.push(LocationEventEmitter.addListener('satellitesDidChange', callback));
+
+    return watchID;
+  },
+
+  clearSatellitesWatch: (watchID) => {
+    const sub = satelliteSubscriptions[watchID];
+
+    if (!sub) {
+      // Silently exit when the watchID is invalid or already cleared
+      // This is consistent with timers
+      return;
+    }
+
+    sub.remove();
+
+    satelliteSubscriptions[watchID] = undefined;
+
+    if (satelliteSubscriptions.filter(s => s).length === 0) {
+      Geolocation.stopObservingSatelliteStatus();
+    }
+  },
+
+  stopObservingSatelliteStatus: () => {
+    if (satelliteUpdatesEnabled) {
+      RNFusedLocation.stopObservingSatelliteStatus();
+      satelliteUpdatesEnabled = false;
+
+      satelliteSubscriptions.forEach((sub) => {
+        if (sub) {
+          // eslint-disable-next-line no-console
+          console.warn('Called stopObservingSatelliteStatus with existing subscriptions.');
+          sub.remove();
+        }
+      });
+
+      satelliteSubscriptions = [];
+    }
+  }
 };
 
 export default Geolocation;

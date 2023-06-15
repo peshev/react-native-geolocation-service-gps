@@ -3,7 +3,7 @@ package com.agontuk.RNFusedLocation;
 import android.location.GpsSatellite;
 
 @SuppressWarnings("deprecation")
-public class RNGpsSatellite implements RNSatellite {
+public class RNGpsSatellite implements Satellite {
   private final GpsSatellite gpsSatellite;
 
   public RNGpsSatellite(GpsSatellite gpsSatellite) {

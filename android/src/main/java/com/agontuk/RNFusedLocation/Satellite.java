@@ -1,6 +1,6 @@
 package com.agontuk.RNFusedLocation;
 
-public interface RNSatellite {
+public interface Satellite {
 
   int getSvid();
 

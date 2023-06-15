@@ -6,21 +6,21 @@ import com.facebook.react.bridge.WritableMap;
 
 import java.util.List;
 
-public class RNGnssStatus {
-  private final List<RNSatellite> satellites;
+public class SatelliteStatus {
+  private final List<Satellite> satellites;
 
-  public RNGnssStatus(List<RNSatellite> satellites) {
+  public SatelliteStatus(List<Satellite> satellites) {
     this.satellites = satellites;
   }
 
-  public List<RNSatellite> getSatellites() {
+  public List<Satellite> getSatellites() {
     return satellites;
   }
 
   public WritableMap serialize() {
     WritableMap result = Arguments.createMap();
     WritableArray satellitesArray = Arguments.createArray();
-    for (RNSatellite satellite : getSatellites()) {
+    for (Satellite satellite : getSatellites()) {
       WritableMap satelliteMap = Arguments.createMap();
       satelliteMap.putInt("svid", satellite.getSvid());
       satelliteMap.putDouble("cn0DbHz", satellite.getCn0DbHz());

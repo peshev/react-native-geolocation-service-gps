@@ -42,12 +42,22 @@ const Geolocation = {
     throw new Error('Method not supported by browser');
   },
 
-  observeSatelliteStatus: function (observerCallback) {
-    return navigator.geolocation.observeSatelliteStatus(observerCallback);
+  watchSatellites: function (callback) {
+    if (!callback) {
+      throw new Error('Must provide a success callback');
+    } else if (!navigator || !navigator.geolocation) {
+      throw new Error('Navigator is not defined');
+    }
+
+    return navigator.geolocation.watchSatellites(callback);
   },
 
-  stopObservingSatelliteStatus: function (observerCallbackId) {
-    navigator.geolocation.stopObservingSatelliteStatus(observerCallbackId);
+  clearSatellitesWatch: function (watchID) {
+    if (!navigator || !navigator.geolocation) {
+      throw new Error('Navigator is not defined');
+    }
+
+    navigator.geolocation.clearSatellitesWatch(watchID);
   }
 };
 

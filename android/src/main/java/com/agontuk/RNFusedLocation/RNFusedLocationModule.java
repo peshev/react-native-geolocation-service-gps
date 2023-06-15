@@ -2,13 +2,8 @@ package com.agontuk.RNFusedLocation;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.location.GnssStatus;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Build;
 import android.util.Log;
 
@@ -24,19 +19,16 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-public class RNFusedLocationModule extends ReactContextBaseJavaModule implements ActivityEventListener, LocationChangeListener {
+public class RNFusedLocationModule extends ReactContextBaseJavaModule implements ActivityEventListener, LocationChangeListener, SatelliteStatusListener {
   public static final String TAG = "RNFusedLocation";
   private final HashMap<LocationProvider, PendingLocationRequest> pendingRequests;
   @Nullable
   private LocationProvider continuousLocationProvider;
+  @Nullable
+  private SatelliteStatusProvider satelliteStatusProvider;
 
   public RNFusedLocationModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -109,6 +101,11 @@ public class RNFusedLocationModule extends ReactContextBaseJavaModule implements
     }
   }
 
+  @Override
+  public void onSatelliteStatusChange(SatelliteStatusProvider satelliteStatusProvider, SatelliteStatus satelliteStatus) {
+    emitEvent("satellitesDidChange", satelliteStatus.serialize());
+  }
+
   @ReactMethod
   public void getCurrentPosition(ReadableMap options, final Callback success, final Callback error) {
     ReactApplicationContext context = getContext();
@@ -164,55 +161,31 @@ public class RNFusedLocationModule extends ReactContextBaseJavaModule implements
     // Keep: Required for RN built in Event Emitter Calls.
   }
 
-  private final Map<String, Object> satelliteStatusCallbacks = new HashMap<>();
-
   @SuppressLint("MissingPermission")
   @ReactMethod
-  public String observeSatelliteStatus(Callback callback) {
-    LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-    Object callbackObject;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-      GnssStatus.Callback gnssStatusCallback = new GnssStatus.Callback() {
-        @Override
-        public void onSatelliteStatusChanged(GnssStatus status) {
-          callback.invoke(new RNGnssStatus(IntStream
-            .range(0, status.getSatelliteCount())
-            .mapToObj(i -> new RNGnssSatellite(status, i))
-            .collect(Collectors.toList())).serialize());
-        }
-      };
-      locationManager.registerGnssStatusCallback(gnssStatusCallback);
-      callbackObject = gnssStatusCallback;
-    } else {
-      GpsStatus.Listener gpsStatusListener = event -> {
-        GpsStatus gpsStatus = locationManager.getGpsStatus(null);
-        if (gpsStatus != null) {
-          List<RNSatellite> satellites = new ArrayList<>();
-          //noinspection deprecation
-          for (GpsSatellite satellite : gpsStatus.getSatellites()) {
-            satellites.add(new RNGpsSatellite(satellite));
-          }
-          callback.invoke(new RNGnssStatus(satellites).serialize());
-        }
-      };
-      locationManager.addGpsStatusListener(gpsStatusListener);
-      callbackObject = gpsStatusListener;
+  public void startObservingSatelliteStatus() {
+    ReactApplicationContext context = getContext();
+
+    if (!LocationUtils.hasLocationPermission(context)) {
+      emitEvent(
+        "geolocationError",
+        LocationUtils.buildError(LocationError.PERMISSION_DENIED, null)
+      );
+      return;
     }
 
-    String key = callbackObject.toString();
-    satelliteStatusCallbacks.put(key, callbackObject);
-    return key;
+    if (satelliteStatusProvider == null) {
+      satelliteStatusProvider = createSatelliteStatusProvider();
+    }
+
+    satelliteStatusProvider.requestSatelliteStatusUpdates();
   }
 
   @ReactMethod
-  void stopObservingSatelliteStatus(String key) {
-    LocationManager locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-    Object callbackObject = satelliteStatusCallbacks.get(key);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-      callbackObject instanceof GnssStatus.Callback) {
-      locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) callbackObject);
-    } else if (callbackObject instanceof GpsStatus.Listener) {
-      locationManager.removeGpsStatusListener((GpsStatus.Listener) callbackObject);
+  void stopObservingSatelliteStatus() {
+    if (satelliteStatusProvider != null) {
+      satelliteStatusProvider.removeSatelliteStatusUpdates();
+      satelliteStatusProvider = null;
     }
   }
 
@@ -225,6 +198,16 @@ public class RNFusedLocationModule extends ReactContextBaseJavaModule implements
     }
 
     return new FusedLocationProvider(context, this);
+  }
+
+  private SatelliteStatusProvider createSatelliteStatusProvider() {
+    ReactApplicationContext context = getContext();
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      return new GnssSatelliteStatusProvider(context, this);
+    } else {
+      return new GpsSatelliteStatusProvider(context, this);
+    }
   }
 
   private void emitEvent(String eventName, WritableMap data) {

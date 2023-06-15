@@ -4,7 +4,7 @@ import android.annotation.SuppressLint;
 import android.location.GnssStatus;
 
 @SuppressLint("NewApi")
-public class RNGnssSatellite implements RNSatellite {
+public class RNGnssSatellite implements Satellite {
   private final GnssStatus gnssStatus;
   private final int satelliteIndex;
 
