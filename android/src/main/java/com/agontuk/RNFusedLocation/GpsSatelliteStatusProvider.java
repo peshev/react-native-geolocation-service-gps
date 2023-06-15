@@ -33,14 +33,14 @@ public class GpsSatelliteStatusProvider implements SatelliteStatusProvider {
     };
   }
 
-  @SuppressLint("MissingPermission")
   @Override
   public void removeSatelliteStatusUpdates() {
-    locationManager.addGpsStatusListener(gpsStatusListener);
+    locationManager.removeGpsStatusListener(gpsStatusListener);
   }
 
+  @SuppressLint("MissingPermission")
   @Override
   public void requestSatelliteStatusUpdates() {
-    locationManager.removeGpsStatusListener(gpsStatusListener);
+    locationManager.addGpsStatusListener(gpsStatusListener);
   }
 }

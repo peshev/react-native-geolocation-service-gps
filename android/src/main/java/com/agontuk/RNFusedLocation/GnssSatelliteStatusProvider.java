@@ -33,14 +33,14 @@ public class GnssSatelliteStatusProvider implements SatelliteStatusProvider {
 
   }
 
-  @SuppressLint("MissingPermission")
   @Override
   public void removeSatelliteStatusUpdates() {
-    locationManager.registerGnssStatusCallback(gnssStatusCallback);
+    locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
   }
 
   @Override
+  @SuppressLint("MissingPermission")
   public void requestSatelliteStatusUpdates() {
-    locationManager.unregisterGnssStatusCallback(gnssStatusCallback);
+    locationManager.registerGnssStatusCallback(gnssStatusCallback);
   }
 }
