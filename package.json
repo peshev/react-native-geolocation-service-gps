@@ -1,5 +1,5 @@
 {
-  "name": "react-native-geolocation-service",
+  "name": "react-native-geolocation-service-gps",
   "version": "5.3.2",
   "description": "React native geolocation service for iOS and android",
   "main": "js/index.js",
@@ -25,15 +25,15 @@
     "ios"
   ],
   "author": {
-    "name": "Iftekhar Rifat",
-    "email": "rifat662@gmail.com",
-    "url": "https://github.com/Agontuk"
+    "name": "Peter Peshev",
+    "email": "peshev@gmail.com",
+    "url": "https://github.com/peshev"
   },
   "license": "MIT",
-  "homepage": "https://github.com/Agontuk/react-native-geolocation-service",
+  "homepage": "https://github.com/peshev/react-native-geolocation-service-gps",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Agontuk/react-native-geolocation-service"
+    "url": "https://github.com/peshev/react-native-geolocation-service-gps"
   },
   "dependencies": {},
   "devDependencies": {
